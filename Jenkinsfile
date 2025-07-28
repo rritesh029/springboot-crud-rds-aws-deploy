@@ -1,15 +1,17 @@
-pipeline{
-    agent any
-    stages{
-        stage('Checkout Code'){
-               steps{
-                     git branch: 'main',
-                            url: 'https://github.com/rritesh029/springboot-crud-rds-aws-deploy'
-                     }
-               }
-        stage('build'){
-            steps{
-                sh 'mvn clean install'
+pipeline {                                                  //Ritesh
+    agent any                                               //Ritesh
+
+    stages {
+        stage('Clone Code') {                               //Ritesh
+            steps {
+                git branch: 'main',                         //Ritesh
+                    url: 'https://github.com/your-username/your-repo.git' //Ritesh
+            }
+        }
+
+        stage('Build with Maven') {                         //Ritesh
+            steps {
+                sh 'mvn clean install'                      //Ritesh
             }
         }
     }
