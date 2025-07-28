@@ -4,7 +4,7 @@ pipeline{
         stage('Checkout Code'){
                steps{
                      git branch: 'main',
-                            url: https://github.com/rritesh029/springboot-crud-rds-aws-deploy
+                            url: 'https://github.com/rritesh029/springboot-crud-rds-aws-deploy'
                      }
                }
         stage('build'){
