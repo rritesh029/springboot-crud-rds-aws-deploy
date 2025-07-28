@@ -11,8 +11,7 @@ pipeline {                                              //Ritesh: This starts th
         stage('Checkout Code') {                        //Ritesh: Stage 1 - Pull code from GitHub (Jenkins clone itself)
             steps {
                 git credentialsId: 'github-token',      //Ritesh: Use GitHub token credential ID stored in Jenkins
-                    url: 'https://github.com/rritesh029/springboot-crud-rds-aws-deploy',
-                    branch: 'main'
+                    url: 'https://github.com/rritesh029/springboot-crud-rds-aws-deploy'
             }
         }
 
