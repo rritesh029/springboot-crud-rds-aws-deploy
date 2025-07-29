@@ -21,7 +21,12 @@ pipeline {                                              //Ritesh: This starts th
 
         stage('Deploy App') {                           //Ritesh: Deployment logic placeholder
             steps {
-                echo 'Deploy stage will go here'        //Ritesh
+                script {
+                    def jarName = sh(script: "ls target/*.jar | grep -v 'original' | head -n 1", returnStdout: true).trim()    //Ritesh: Get JAR name excluding original JAR
+                    sh "cp ${jarName} /app-deploy/app.jar"                       //Ritesh: Copy JAR to shared folder (mapped to host)
+                    sh "pkill -f 'java -jar' || true"                           //Ritesh: Stop old app if running (safe kill)
+                    sh "nohup java -jar /app-deploy/app.jar > /app-deploy/log.txt 2>&1 &"  //Ritesh: Start app in background
+                }
             }
         }
     }
