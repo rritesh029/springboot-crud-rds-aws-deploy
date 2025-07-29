@@ -7,57 +7,65 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 public class EmployeeController {
 
     @Autowired
     EmployeeRepository employeeRepository;
+
     //Save lsit of employees
     @RequestMapping(value = "/employees", method = RequestMethod.POST)
-    public List<Employee> save_Employees(@RequestBody List<Employee> employees)
-    {
-       return employeeRepository.saveAll(employees);
+    public List<Employee> save_Employees(@RequestBody List<Employee> employees) {
+        return employeeRepository.saveAll(employees);
     }
 
     //Save one employee
     @RequestMapping(value = "/employee", method = RequestMethod.POST)
-    public Employee save_Employee(@RequestBody Employee employee)
-    {
+    public Employee save_Employee(@RequestBody Employee employee) {
         return employeeRepository.save(employee);
     }
 
     @GetMapping("/employees")
     //Get all employees
-    public List<Employee> fetch_employees()
-    {
+    public List<Employee> fetch_employees() {
         return employeeRepository.findAll();
     }
 
     @GetMapping("/employee/{id}")
     //Get one employee
-    public ResponseEntity<Employee> fetch_employee(@PathVariable int id)
-    {
-        return employeeRepository.findById(id).map(e->ResponseEntity.ok(e))
+    public ResponseEntity<Employee> fetch_employee(@PathVariable int id) {
+        return employeeRepository.findById(id).map(e -> ResponseEntity.ok(e))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/employee/{id}")
     //update employee
-    public ResponseEntity<Employee>updateEmployee(@PathVariable int id, @RequestBody Employee updatedEmployee)
-    {
-        if(null!=employeeRepository.findById(id))
-        {
+    public ResponseEntity<Employee> updateEmployee(@PathVariable int id, @RequestBody Employee updatedEmployee) {
+        if (employeeRepository.findById(id).isPresent()) {
             updatedEmployee.setId(456);
             updatedEmployee.setName("Ritesh");
             updatedEmployee.setRole("Admin");
-            return new ResponseEntity<>(employeeRepository.save(updatedEmployee),HttpStatus.OK);
-        }
-        else
+            return new ResponseEntity<>(employeeRepository.save(updatedEmployee), HttpStatus.OK);
+        } else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
     }
 
+    @RequestMapping(value = "/employee/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Map<String, Object>> removeEmployee(@PathVariable int id) {
+        if(employeeRepository.findById(id).isPresent()){
+            Optional<Employee> employee= employeeRepository.findById(id);
+            employeeRepository.deleteById(id);
+            Map<String, Object> response= new HashMap<>();
+            response.put("message", "Employee deleted successfully");
+            response.put("Employee deleted is", employee);
+            return ResponseEntity.ok(response);
+
+        }
+        else
+            throw new RuntimeException("Employee not found with ID:"+id  );
+    }
 
 }
