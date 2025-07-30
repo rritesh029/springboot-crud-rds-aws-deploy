@@ -3,42 +3,41 @@ pipeline {                                              //Ritesh: This starts th
 
     environment {                                       //Ritesh: Define environment variables
         JAVA_HOME = "/opt/java/openjdk"                //Ritesh: Set JAVA_HOME if needed
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"          //Ritesh: Update PATH
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"          //Ritesh: Update PATH to include Java binaries
     }
 
     stages {
-        stage('Build with Maven') {                     //Ritesh: Compile & package
+        stage('Build with Maven') {                     //Ritesh: Compile & package the app
             steps {
-                echo '📦 Building application...'       //ChatGPT
-                sh 'mvn clean install -DskipTests'      //Ritesh: Maven build (tests skipped)
+                echo '📦 Building application...'
+                sh 'mvn clean install -DskipTests'      //Ritesh: Build without running tests
             }
         }
 
         stage('Test') {                                 //Ritesh: Run unit tests
             steps {
-                echo '🧪 Running tests...'              //ChatGPT
+                echo '🧪 Running tests...'
                 sh 'mvn test'                           //Ritesh: Run tests
             }
         }
 
-        stage('Deploy App') {                           //Ritesh: Deployment logic placeholder
+        stage('Deploy App') {                           //Ritesh: Deployment logic to run JAR
             steps {
-                echo '🚀 Deploying application...'      //ChatGPT
+                echo '🚀 Deploying application...'
                 script {
-                    //ChatGPT: Extract JAR path, skipping "original" jars from shading
-                    def jarName = sh(script: "ls target/*.jar | grep -v 'original' | head -n 1", returnStdout: true).trim()    //Ritesh
+                    def jarName = sh(
+                        script: "ls target/*.jar | grep -v 'original' | head -n 1",
+                        returnStdout: true
+                    ).trim()                                                                 //Ritesh: Get built JAR name
 
-                    //ChatGPT: Ensure deploy dir exists
-                    sh "mkdir -p /app-deploy"            //ChatGPT
+                    sh "mkdir -p /app-deploy"                                               //Ritesh: Ensure deploy dir exists
+                    sh "cp ${jarName} /app-deploy/app.jar"                                   //Ritesh: Copy JAR to host-mounted directory
 
-                    //ChatGPT: Copy JAR to host-shared deploy folder
-                    sh "cp ${jarName} /app-deploy/app.jar"     //Ritesh
-
-                    //ChatGPT: Kill running app if exists (ignore errors)
-                    sh "pkill -f '/app-deploy/app.jar' || true"     //Ritesh
-
-                    //ChatGPT: Restart the app on port 8081
-                    sh "nohup java -jar /app-deploy/app.jar --server.port=8081 > /app-deploy/log.txt 2>&1 &"   //Ritesh
+                    sh '''
+                        echo "🔄 Restarting Spring Boot App..."
+                        pkill -f '/app-deploy/app.jar' || true                              #Ritesh: Stop old app (safe)
+                        nohup java -jar /app-deploy/app.jar --server.port=8081 --server.address=0.0.0.0 > /app-deploy/log.txt 2>&1 &
+                    '''
                 }
             }
         }
@@ -47,7 +46,7 @@ pipeline {                                              //Ritesh: This starts th
     post {
         success {
             echo '✅ Build and deployment successful!'   //Ritesh
-            echo '🌍 Visit http://<EC2-IP>:8081 to access the app'  //ChatGPT
+            echo '🌍 Visit http://<EC2-IP>:8081 to access the app'
         }
         failure {
             echo '❌ Build or deployment failed!'        //Ritesh
